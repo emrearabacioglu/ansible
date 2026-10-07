@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.vscode/
+*.pem
+*.retry
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
