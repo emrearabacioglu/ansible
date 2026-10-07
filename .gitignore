@@ -7,3 +7,5 @@ __pycache__/
 *.tfstate
 *.tfstate.*
 *.tfvars
+*.tgz
+node_modules/
