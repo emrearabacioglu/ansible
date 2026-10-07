@@ -12,28 +12,32 @@
 
 - name: Create user for nodeapp
   hosts: 188.166.34.20
+  vars_files:
+    project-vars
   tasks:
     - name: Create linux user
       user:
-        name: nodeuser
+        name: "{{linux_name}}"
         comment: node admin
         group: admin
 
 - name: Deploy nodejs app
   hosts: 188.166.34.20
   become: True
-  become_user: nodeuser
+  become_user: "{{linux_name}}"
+  vars_files:
+    project-vars
   tasks:
     - name: Unpack the nodejs file
       unarchive:
-        src: nodejs-app/nodejs-app-1.0.0.tgz
-        dest: /home/nodeuser
+        src: "{{location}}/nodejs-app-{{version}}.tgz"
+        dest: "{{user_home_dir}}"
     - name: Install dependencies
       npm:
-        path: /home/nodeuser/package
+        path: "{{user_home_dir}}/package"
     - name: Start app
       command:
-        chdir: /home/nodeuser/package/app/
+        chdir: "{{user_home_dir}}/package/app/"
         cmd: node server
       async: 1000
       poll: 0
@@ -41,4 +45,3 @@
       shell: ps aux | grep node
       register: app_status
     - debug: msg={{app_status.stdout_lines}}
-    
