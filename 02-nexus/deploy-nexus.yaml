@@ -1,6 +1,6 @@
 ---
 - name: Install java and net-tools
-  hosts: 206.189.51.31
+  hosts: nexus_server
   tasks:
     - name: Update apt repo and cache
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
@@ -12,8 +12,13 @@
       apt: name=net-tools
 
 - name: Download/Unpack Nexus Installer
-  hosts: 206.189.51.31
+  hosts: nexus_server
   tasks:
+    - name: Check nexus folder stats
+      stat:
+        path: /opt/nexus
+      register: stat_result
+
     - name: Download Nexus
       get_url:
         url: https://download.sonatype.com/nexus/3/latest-linux-x86_64.tar.gz
@@ -25,6 +30,7 @@
         src: "{{download_result.dest}}"
         dest: /opt/
         remote_src: yes
+      when: not stat_result.stat.exists
 
     - name: Find nexus folder
       find: 
@@ -33,11 +39,67 @@
         file_type: directory
       register: find_result
 
-    - name: Check if nexus folder stats
-      stat:
-        path: /opt/nexus
-      register: stat_result
-
     - name: Rename nexus folder
       shell: mv {{find_result.files[0].path}} /opt/nexus
       when: not stat_result.stat.exists
+
+- name: Create nexus user and group
+  hosts: nexus_server
+  tasks:
+    - name: Create nexus group
+      group:
+        name: nexus
+        state: present
+    
+    - name: Create nexus user
+      user:
+        name: nexus
+        group: nexus
+    
+    - name: Match user and group of nexus folder
+      file:
+        path: /opt/nexus
+        state: directory
+        owner: nexus
+        group: nexus
+        recurse: yes
+
+    - name: Match user and group of sonatype folder
+      file:
+        path: /opt/sonatype-work
+        state: directory
+        owner: nexus
+        group: nexus
+        recurse: yes
+
+- name: Start nexus with nexus user
+  hosts: nexus_server
+  become: True
+  become_user: nexus
+  tasks:
+    - name: Set run_as_user nexus
+      lineinfile:
+        path: /opt/nexus/bin/nexus
+        regexp: '^run_as_user='
+        line: run_as_user="nexus"
+
+    - name: Run nexus
+      command: /opt/nexus/bin/nexus start
+
+- name: Verify nexus running
+  hosts: nexus_server
+  tasks:
+    - name: Check with ps 
+      shell: ps aux | grep nexus
+      register: app_status
+    - debug: msg={{app_status.stdout_lines}}
+
+    - name: Wait for nexus port
+      wait_for:
+        port: 8081
+        timeout: 300
+
+    - name: Check with netstat 
+      shell: netstat -lnpt
+      register: app_status
+    - debug: msg={{app_status.stdout_lines}}
