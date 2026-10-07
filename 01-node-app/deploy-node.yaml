@@ -1,0 +1,19 @@
+---
+- name: Install node and npm
+  hosts: 188.166.34.20
+  tasks:
+    - name: Update apt repo and cache
+      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+    - name: Install nodejs and npm
+      apt:
+        pkg:
+          - nodejs
+          - npm
+
+- name: Deploy nodejs app
+  hosts: 188.166.34.20
+  tasks:
+    - name: Unpack the nodejs file
+      unarchive:
+        src: nodejs-app/nodejs-app-1.0.0.tgz
+        dest: /root/
