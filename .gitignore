@@ -9,3 +9,4 @@ __pycache__/
 *.tfvars
 *.tgz
 node_modules/
+03-docker/project-vars
