@@ -11,3 +11,4 @@ __pycache__/
 node_modules/
 03-docker/project-vars
 04-terraform-integration/project-vars
+05-dynamic-inventory/project-vars
