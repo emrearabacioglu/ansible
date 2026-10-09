@@ -1,6 +1,6 @@
 ---
 - name: Install Docker
-  hosts: tag_Name_dev_server
+  hosts: all
   become: yes
   tasks:
     - name: Install Docker
@@ -15,9 +15,7 @@
         state: started
 
 - name: Install docker-compose
-  hosts: tag_Name_dev_server
-  become: yes
-  become_user: dockeruser
+  hosts: all
   tasks:
     - name: Create docker-compose directory
       file:
