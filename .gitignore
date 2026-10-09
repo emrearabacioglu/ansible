@@ -13,3 +13,4 @@ node_modules/
 04-terraform-integration/project-vars
 05-dynamic-inventory/project-vars
 06-k8s-deployment/kubeconfig_*
+08-roles/project-vars

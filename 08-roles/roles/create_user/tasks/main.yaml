@@ -1,0 +1,5 @@
+- name: Create new user
+  user:
+    name: dockeruser
+    groups: "{{ user_groups }}"
+    append: yes
